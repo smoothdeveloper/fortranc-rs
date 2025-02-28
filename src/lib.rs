@@ -1906,6 +1906,33 @@ impl Build {
         Ok(())
     }
 
+
+    /// Get the compiler that's in use for this configuration.
+    ///
+    /// This function will return a `Tool` which represents the culmination
+    /// of this configuration at a snapshot in time. The returned compiler can
+    /// be inspected (e.g. the path, arguments, environment) to forward along to
+    /// other tools, or the `to_command` method can be used to invoke the
+    /// compiler itself.
+    ///
+    /// This method will take into account all configuration such as debug
+    /// information, optimization level, include directories, defines, etc.
+    /// Additionally, the compiler binary in use follows the standard
+    /// conventions for this path, e.g. looking at the explicitly set compiler,
+    /// environment variables (a number of which are inspected here), and then
+    /// falling back to the default configuration.
+    ///
+    /// # Panics
+    ///
+    /// Panics if an error occurred while determining the architecture.
+    pub fn get_compiler(&self) -> Tool {
+        match self.try_get_compiler() {
+            Ok(tool) => tool,
+            Err(e) => fail(&e.message),
+        }
+    }
+
+
     /// Get the compiler that's in use for this configuration.
     ///
     /// This will return a result instead of panicking; see

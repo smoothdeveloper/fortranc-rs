@@ -1,6 +1,6 @@
 program detect_compiler
     implicit none
-
+    use iso_fortran_env, only: compiler_version, compiler_options
 #if defined(__FLANG__) || defined(__FLANG_COMPILER)
     print *, "Flang detected"
 #elif defined(__LFORTRAN__)
@@ -26,5 +26,9 @@ program detect_compiler
 #else
     print *, "Unknown Fortran Compiler detected"
 #endif
+    ! https://fortranwiki.org/fortran/show/compiler_options
+    print '(4a)', 'This file was compiled by ', &
+              compiler_version(), ' using the options ', &
+              compiler_options()
 
 end program detect_compiler

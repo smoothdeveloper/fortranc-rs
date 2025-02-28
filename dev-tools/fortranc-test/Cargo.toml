@@ -1,0 +1,10 @@
+[package]
+name = "fortranc-test"
+version = "0.1.0"
+edition = "2024"
+
+[build-dependencies]
+fortranc = { path="../../" }
+
+[profile.dev.build-override]
+debug = true
