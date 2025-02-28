@@ -1,0 +1,9 @@
+[package]
+name = "gen-windows-sys-binding"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+windows-bindgen = "0.59"
+tempfile = "3"
+regex = "1"
