@@ -3,6 +3,65 @@
 //! to link into the crate being built. This crate does not compile code itself;
 //! it calls out to the default compiler for the platform.
 //! This crate is courtesy of the work done in cc-rs crate.
+//! # Example
+//!
+//! First, you'll want to both add a build script for your crate (`build.rs`) and
+//! also add this crate to your `Cargo.toml` via:
+//!
+//! ```toml
+//! [build-dependencies]
+//! fortranc = "*"
+//! ```
+//!
+//! Next up, you'll want to write a build script like so:
+//!
+//! ```rust,no_run
+//! // build.rs
+//! fortranc::Build::new()
+//!     .file("foo.f90")
+//!     .file("bar.f90")
+//!     .compile("foo");
+//! ```
+//!
+//! And that's it! Running `cargo build` should take care of the rest and your Rust
+//! application will now have the Fortran files `foo.f90` and `bar.f90` compiled into a file
+//! named `libfoo.a`. If the Fortran files contain
+//!
+//! ```fortran
+//! subroutine foo() bind(C)
+//!    print *, 'hello from fortran'
+//! end subroutine
+//! ```
+//!
+//! and
+//!
+//! ```fortran
+//! function bar() bind(C) result(i)
+//!   integer(4) :: i
+//!   i = 5
+//! end function
+//! ```
+//!
+//! you can call them from Rust by declaring them in
+//! your Rust code like so:
+//!
+//! ```rust,no_run
+//! unsafe extern "C" {
+//!     fn foo();
+//!     fn bar() -> i32;
+//! }
+//!
+//! pub fn call() {
+//!     unsafe {
+//!         foo();
+//!         bar();
+//!     }
+//! }
+//!
+//! fn main() {
+//!     call();
+//! }
+//! ```
 
 use shlex::Shlex;
 use std::borrow::Cow;
