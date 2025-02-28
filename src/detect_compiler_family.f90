@@ -5,11 +5,11 @@ program detect_compiler
     print *, "Flang detected"
 #elif defined(__LFORTRAN__)
     print *, "LFortran detected"
-#elifdef __INTEL_COMPILER
+#elif defined(__INTEL_COMPILER)
     #ifdef __INTEL_COMPILER_CLASSIC
         print *, "Intel Fortran Compiler (ifort) detected"
     #else
-        print *, "Intel Fortran Compiler Classic (ifx) detected"
+        print *, "Intel Fortran Compiler (ifx) detected"
     #endif
 #elif defined(__GFORTRAN__)
     print *, "GNU Fortran Compiler detected"

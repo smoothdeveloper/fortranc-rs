@@ -1,11 +1,11 @@
-use crate::command_helper::{run, run_output, CargoOutput, OutputKind};
+use crate::command_helper::{run, run_command_for_stdout_and_stderr, run_output, CargoOutput, OutputKind};
 use crate::tempfile::NamedTempfile;
 use crate::{Error, ErrorKind};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::env;
 use std::ffi::{OsStr, OsString};
-use std::io::Write;
+use std::io::{Read, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 use std::sync::RwLock;
@@ -112,32 +112,19 @@ impl Tool {
             .is_ok();
 
             let flang = stdout.contains(r#""Flang detected""#);
-            let gfortran = stdout.contains(r#""GNU Fortran Compiler detected""#);
-            /*
-            match (clang, accepts_cl_style_flags, gcc, emscripten, vxworks) {
-                (clang_cl, true, _, false, false) => Ok(ToolFamily::Msvc { clang_cl }),
-                (true, _, _, _, false) | (_, _, _, true, false) => Ok(ToolFamily::Clang {
-                    zig_cc: is_zig_cc(path, cargo_output),
-                }),
-                (false, false, true, _, false) | (_, _, _, _, true) => Ok(ToolFamily::Gnu),
-                (false, false, false, false, false) => {
-                    cargo_output.print_warning(&"Compiler family detection failed since it does not define `__clang__`, `__GNUC__`, `__EMSCRIPTEN__` or `__VXWORKS__`, also does not accept cl style flag `-?`, fallback to treating it as GNU");
-                    Err(Error::new(
-                        ErrorKind::ToolFamilyMacroNotFound,
-                        "Expects macro `__clang__`, `__GNUC__` or `__EMSCRIPTEN__`, `__VXWORKS__` or accepts cl style flag `-?`, but found none",
-                    ))
-                }
-            }*/
-            match (flang,gfortran) {
-                (true,_) => Ok(ToolFamily::Flang),
-                (_,true) => Ok(ToolFamily::GFortran),
-                (false,false) => {
-                    cargo_output.print_warning(&"Compiler family detection failed since it does not define `__flang__`, `__GFORTRAN__`, also does not accept cl style flag `-?`, fallback to treating it as GFORTRAN");
-                    Err(Error::new(
-                        ErrorKind::ToolFamilyMacroNotFound,
-                        "Expects macro `__flang__`, `__GFORTRAN__` or accepts cl style flag `-?`, but found none",
-                    ))
-                } 
+            let gfortran = !flang && stdout.contains(r#""GNU Fortran Compiler detected""#);
+            let ifx = !gfortran && stdout.contains(r#""Intel Fortran Compiler (ifx) detected""#);
+
+            if flang { Ok(ToolFamily::Flang) }
+            else if gfortran { Ok(ToolFamily::GFortran) }
+            else if ifx { Ok(ToolFamily::IntelIFX) }
+            else {
+                cargo_output.print_warning(&format!("guess family from stdout: {:?}",stdout));
+                cargo_output.print_warning(&"Compiler family detection failed since it does not define `__flang__`, `__GFORTRAN__` or '__INTEL_COMPILER', also does not accept cl style flag `-?`, fallback to treating it as GFORTRAN");
+                Err(Error::new(
+                    ErrorKind::ToolFamilyMacroNotFound,
+                    "Expects macro `__flang__`, `__GFORTRAN__`, `__INTEL_COMPILER` or accepts cl style flag `-?`, but found none",
+                ))
             }
         }
 
@@ -182,15 +169,11 @@ impl Tool {
             // When expanding the file, the compiler prints a lot of information to stderr
             // that it is not an error, but related to expanding itself.
             //
-            // cc would have to disable warning here to prevent generation of too many warnings.
+            // fortranc would have to disable warning here to prevent generation of too many warnings.
             let mut compiler_detect_output = cargo_output.clone();
             compiler_detect_output.warnings = compiler_detect_output.debug;
 
-            let stdout = run_output(
-                Command::new(path).arg("-cpp").arg("-E").arg(tmp.path()),
-                &compiler_detect_output,
-            )?;
-            let stdout = String::from_utf8_lossy(&stdout);
+            let (stdout,stderr) = run_command_for_stdout_and_stderr(Command::new(path).arg("-cpp").arg("-E").arg(tmp.path()))?;
 
             if stdout.contains("-Wslash-u-filename") {
                 let stdout = run_output(
@@ -203,7 +186,17 @@ impl Tool {
                 )?;
                 let stdout = String::from_utf8_lossy(&stdout);
                 guess_family_from_stdout(&stdout, path, args, cargo_output)
-            } else {
+            }
+            else if stderr.contains("command line warning #10006: ignoring unknown option '/cpp'") || stderr.contains("command line warning #10006: ignoring unknown option '-cpp'") {
+                let stdout = run_output(
+                    Command::new(path)
+                      .arg("-fpp")
+                      .arg("-E")
+                      .arg(tmp.path()), &compiler_detect_output)?;
+                let stdout = String::from_utf8_lossy(&stdout);
+                guess_family_from_stdout(&stdout, path, args, cargo_output)
+            }
+            else {
                 guess_family_from_stdout(&stdout, path, args, cargo_output)
             }
         }

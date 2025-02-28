@@ -1402,6 +1402,8 @@ impl Build {
         let is_arm = matches!(target.arch, "aarch64" | "arm");
         let flang = compiler.is_like_flang();
         let gfortran = compiler.family == ToolFamily::GFortran;
+        let ifx = compiler.family == ToolFamily::IntelIFX;
+        let lfortran = compiler.family == ToolFamily::LFortran;
         command_add_output_file(
             &mut cmd,
             &obj,
@@ -1411,10 +1413,18 @@ impl Build {
                 msvc: false, // compiler.is_like_msvc(),
                 flang,
                 gfortran,
+                ifx,
+                lfortran,
                 is_asm: false,
                 is_arm,
             },
         );
+        if ifx {
+            // set -nologo for Intel compiler, otherwise it will print on stderr something akin to:
+            // Intel(R) Fortran Compiler for applications running on Intel(R) 64, Version 2025.0.4 Build 20241205
+            // Copyright (C) 1985-2024 Intel Corporation. All rights reserved.
+            cmd.arg("-nologo");
+        }
         /*
               if compiler.supports_path_delimiter() {
                   cmd.arg("--");
@@ -2259,6 +2269,8 @@ impl Build {
         let compiler = self.try_get_compiler()?;
         let flang = compiler.is_like_flang();
         let gfortran = compiler.family == ToolFamily::GFortran;
+        let ifx = compiler.family == ToolFamily::IntelIFX;
+        let lfortran = compiler.family == ToolFamily::LFortran;
 
         let is_assembler_msvc = msvc && asm_ext == Some(AsmFileExt::DotAsm);
         let mut cmd = if is_assembler_msvc {
@@ -2280,6 +2292,8 @@ impl Build {
                 msvc: false, //compiler.is_like_msvc(),
                 flang,
                 gfortran,
+                ifx,
+                lfortran,
                 is_asm,
                 is_arm,
             },

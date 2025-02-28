@@ -357,6 +357,30 @@ pub(crate) fn run_output(cmd: &mut Command, cargo_output: &CargoOutput) -> Resul
     Ok(stdout)
 }
 
+pub(crate) fn run_command_for_stdout_and_stderr(cmd: &mut Command) -> Result<(String,String), Error>{
+    let mut result = cmd.stdout(Stdio::piped()).stderr(Stdio::piped()).spawn()?;
+
+    let stdout =
+        match result.stdout.take() {
+            Some(mut stdout) => {
+                let mut s = String::new();
+                stdout.read_to_string(&mut s).unwrap();
+                s
+            },
+            None =>String::new()
+        };
+    let stderr =
+      match result.stderr.take() {
+          Some(mut stderr) => {
+              let mut s = String::new();
+              stderr.read_to_string(&mut s).unwrap();
+              s
+          },
+          None =>String::new()
+      };
+
+    Ok((stdout,stderr))
+}
 pub(crate) fn spawn(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<Child, Error> {
     struct ResetStderr<'cmd>(&'cmd mut Command);
 

@@ -5,6 +5,7 @@ fn main() {
     .file("src/foo.f90")
     .flag_if_supported("-Wall")
     .flag_if_supported("-cpp")
+    .flag_if_supported("-fpp")
     .flag_if_supported("-Wfoo-bar-this-flag-does-not-exist")
     .define("FOO", None)
     .define("BAR", "1")
