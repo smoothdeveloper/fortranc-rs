@@ -1,15 +1,15 @@
 program detect_compiler
-    implicit none
     use iso_fortran_env, only: compiler_version, compiler_options
-#if defined(__FLANG__) || defined(__FLANG_COMPILER)
+    implicit none
+#if defined(__flang__)
     print *, "Flang detected"
 #elif defined(__LFORTRAN__)
     print *, "LFortran detected"
 #elifdef __INTEL_COMPILER
     #ifdef __INTEL_COMPILER_CLASSIC
-        print *, "Intel Fortran Compiler Classic (ifx) detected"
-    #else
         print *, "Intel Fortran Compiler (ifort) detected"
+    #else
+        print *, "Intel Fortran Compiler Classic (ifx) detected"
     #endif
 #elif defined(__GFORTRAN__)
     print *, "GNU Fortran Compiler detected"

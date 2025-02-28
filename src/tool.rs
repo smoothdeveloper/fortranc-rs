@@ -111,8 +111,8 @@ impl Tool {
             )
             .is_ok();
 
-            let flang = stdout.contains(r#""Flang""#);
-            let gfortran = stdout.contains(r#""GNU Fortran""#);
+            let flang = stdout.contains(r#""Flang detected""#);
+            let gfortran = stdout.contains(r#""GNU Fortran Compiler detected""#);
             /*
             match (clang, accepts_cl_style_flags, gcc, emscripten, vxworks) {
                 (clang_cl, true, _, false, false) => Ok(ToolFamily::Msvc { clang_cl }),
@@ -128,7 +128,17 @@ impl Tool {
                     ))
                 }
             }*/
-            Ok(ToolFamily::GFortran)
+            match (flang,gfortran) {
+                (true,_) => Ok(ToolFamily::Flang),
+                (_,true) => Ok(ToolFamily::GFortran),
+                (false,false) => {
+                    cargo_output.print_warning(&"Compiler family detection failed since it does not define `__flang__`, `__GFORTRAN__`, also does not accept cl style flag `-?`, fallback to treating it as GFORTRAN");
+                    Err(Error::new(
+                        ErrorKind::ToolFamilyMacroNotFound,
+                        "Expects macro `__flang__`, `__GFORTRAN__` or accepts cl style flag `-?`, but found none",
+                    ))
+                } 
+            }
         }
 
         fn detect_family_inner(
@@ -154,7 +164,7 @@ impl Tool {
                     Error {
                         kind: ErrorKind::IOError,
                         message: format!(
-                            "failed to create detect_compiler_family.c temp file in '{}': {}",
+                            "failed to create detect_compiler_family.f90 temp file in '{}': {}",
                             out_dir.display(),
                             err
                         )
