@@ -2,6 +2,19 @@
 name = "fortranc"
 version = "0.1.0"
 edition = "2021"
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/smoothdeveloper/fortranc-rs"
+documentation = "https://docs.rs/fortranc"
+description = """
+A build-time dependency for Cargo build scripts to assist in invoking the native
+Fortran compiler to compile native Fortran code into a static archive to be linked into Rust
+code.
+"""
+keywords = ["build-dependencies"]
+readme = "readme.md"
+categories = ["development-tools::build-utils"]
+# The binary target is only used by tests.
+exclude = ["/.github", "tests", "src/bin"]
 
 [dependencies]
 jobserver = { version = "0.1.30", default-features = false, optional = true }
@@ -30,3 +43,6 @@ members = [
     "dev-tools/fortranc-test",
     "dev-tools/gen-windows-sys-binding",
 ]
+
+[patch.crates-io]
+fortranc = { path = "." }
