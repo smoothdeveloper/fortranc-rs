@@ -11,7 +11,7 @@ use std::ffi::{OsStr, OsString};
 use std::fmt::Display;
 use std::io::Write;
 use std::path::{Component, Path, PathBuf};
-use std::process::{Child, Command};
+use std::process::{Command};
 use std::sync::atomic::AtomicU8;
 use std::sync::atomic::Ordering::Relaxed;
 use std::sync::{Arc, RwLock};
@@ -21,8 +21,8 @@ mod parallel;
 mod tempfile;
 mod tool;
 use crate::command_helper::{
-    command_add_output_file, objects_from_files, run, run_output, spawn, CargoOutput,
-    CmdAddOutputFileArgs, StderrForwarder,
+    command_add_output_file, objects_from_files, run, run_output, CargoOutput,
+    CmdAddOutputFileArgs,
 };
 use crate::flags::RustcCodegenFlags;
 use crate::target::TargetInfo;
@@ -957,12 +957,12 @@ impl Build {
 
         let tool_opt: Option<Tool> = self
             .env_tool(env)
-            .map(|(tool, wrapper, args)| {
+            .map(|(tool, _wrapper, args)| {
                 // Chop off leading/trailing whitespace to work around
                 // semi-buggy build scripts which are shared in
                 // makefiles/configure scripts (where spaces are far more
                 // lenient)
-                let mut t = Tool::with_args(
+                let t = Tool::with_args(
                     tool,
                     args.clone(),
                     &self.build_cache.cached_compiler_family,
@@ -1069,7 +1069,7 @@ impl Build {
                     default.to_string()
                 };
 
-                let mut t = Tool::new(
+                let t = Tool::new(
                     PathBuf::from(compiler),
                     &self.build_cache.cached_compiler_family,
                     &self.cargo_output,
@@ -1465,10 +1465,10 @@ impl Build {
     fn add_default_flags(
         &self,
         cmd: &mut Tool,
-        target: &TargetInfo<'_>,
-        opt_level: &str,
+        _target: &TargetInfo<'_>,
+        _opt_level: &str,
     ) -> Result<(), Error> {
-        let raw_target = self.get_raw_target()?;
+        let _raw_target = self.get_raw_target()?;
         // Non-target flags
         // If the flag is not conditioned on target variable, it belongs here :)
         /*match cmd.family {
@@ -2787,8 +2787,8 @@ impl Build {
                     // of not running ranlib on Windows anyway, so it feels okay to return lib.exe
                     // here.
 
-                    let compiler = self.get_base_compiler()?;
-                    let mut lib = String::new();
+                    let _compiler = self.get_base_compiler()?;
+                    let lib = String::new();
                     /*
                     if compiler.family == (ToolFamily::Msvc { clang_cl: true }) {
                         // See if there is 'llvm-lib' next to 'clang-cl'
@@ -3064,7 +3064,7 @@ impl Build {
             .map(|c| c.to_command())
     }
 
-    fn windows_registry_find_tool(&self, target: &TargetInfo<'_>, tool: &str) -> Option<Tool> {
+    fn windows_registry_find_tool(&self, _target: &TargetInfo<'_>, _tool: &str) -> Option<Tool> {
         /*struct BuildEnvGetter<'s>(&'s Build);
 
         impl windows_registry::EnvGetter for BuildEnvGetter<'_> {

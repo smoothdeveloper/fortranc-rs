@@ -1,7 +1,6 @@
 use crate::target::TargetInfo;
-use crate::{Build, Error, ErrorKind, Tool, ToolFamily};
+use crate::{Build, Error, ErrorKind, Tool};
 use std::borrow::Cow;
-use std::ffi::OsString;
 
 #[derive(Debug, PartialEq, Default)]
 pub(crate) struct RustcCodegenFlags<'a> {
@@ -167,8 +166,9 @@ impl<'this> RustcCodegenFlags<'this> {
     }
 
     // Rust and clang/cc don't agree on what equivalent flags should look like.
-    pub(crate) fn cc_flags(&self, build: &Build, tool: &mut Tool, target: &TargetInfo<'_>) {
-        let family = tool.family;
+    pub(crate) fn cc_flags(&self, _build: &Build, _tool: &mut Tool, _target: &TargetInfo<'_>) {
+        //let family = tool.family;
+        /*
         // Push `flag` to `flags` if it is supported by the currently used CC
         let mut push_if_supported = |flag: OsString| {
             if build
@@ -182,7 +182,7 @@ impl<'this> RustcCodegenFlags<'this> {
                     flag
                 ));
             }
-        };
+        };*/
         /*
         let clang_or_gnu =
           matches!(family, ToolFamily::Clang { .. }) || matches!(family, ToolFamily::Gnu { .. });

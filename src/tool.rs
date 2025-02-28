@@ -1,13 +1,13 @@
-use crate::command_helper::{run, run_command_for_stdout_and_stderr, run_output, CargoOutput, OutputKind};
+use crate::command_helper::{run_command_for_stdout_and_stderr, run_output, CargoOutput};
 use crate::tempfile::NamedTempfile;
 use crate::{Error, ErrorKind};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::env;
 use std::ffi::{OsStr, OsString};
-use std::io::{Read, Write};
+use std::io::{Write};
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
+use std::process::{Command};
 use std::sync::RwLock;
 
 pub(crate) type CompilerFamilyLookupCache = HashMap<Box<[Box<OsStr>]>, ToolFamily>;
@@ -91,12 +91,12 @@ impl Tool {
 
         fn guess_family_from_stdout(
             stdout: &str,
-            path: &Path,
-            args: &[String],
+            _path: &Path,
+            _args: &[String],
             cargo_output: &CargoOutput,
         ) -> Result<ToolFamily, Error> {
             cargo_output.print_debug(&stdout);
-
+/*
             // https://gitlab.kitware.com/cmake/cmake/-/blob/69a2eeb9dff5b60f2f1e5b425002a0fd45b7cadb/Modules/CMakeDetermineCompilerId.cmake#L267-271
             // stdin is set to null to ensure that the help output is never paginated.
             let accepts_cl_style_flags = run(
@@ -110,7 +110,7 @@ impl Tool {
                 },
             )
             .is_ok();
-
+*/
             let flang = stdout.contains(r#""Flang detected""#);
             let gfortran = !flang && stdout.contains(r#""GNU Fortran Compiler detected""#);
             let ifx = !gfortran && stdout.contains(r#""Intel Fortran Compiler (ifx) detected""#);
