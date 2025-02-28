@@ -404,7 +404,7 @@ pub(crate) fn spawn(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<Chi
         Ok(child) => Ok(child),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             let extra = if cfg!(windows) {
-                " (see https://docs.rs/cc/latest/cc/#compile-time-requirements for help)"
+                " (see https://docs.rs/fortranc/latest/fortranc/#compile-time-requirements for help)"
             } else {
                 ""
             };
@@ -426,6 +426,8 @@ pub(crate) struct CmdAddOutputFileArgs {
     pub(crate) msvc: bool,
     pub(crate) flang: bool,
     pub(crate) gfortran: bool,
+    pub(crate) ifx: bool,
+    pub(crate) lfortran: bool,
     pub(crate) is_asm: bool,
     pub(crate) is_arm: bool,
 }
